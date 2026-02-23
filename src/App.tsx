@@ -10,8 +10,8 @@ import {
   Smile, ShieldAlert, Sparkles, Sprout
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { GoogleGenAI, ThinkingLevel } from "@google/genai";
-import { MOODS, PROMPTS, JournalEntry, Mood } from './constants';
+import { GoogleGenAI, Type } from "@google/genai";
+import { MOODS, PROMPTS, JournalEntry, Mood, WISDOM_SEEDS } from './constants';
 
 const cn = (...classes: (string | boolean | undefined)[]) => classes.filter(Boolean).join(' ');
 
@@ -26,6 +26,7 @@ export default function App() {
   const [lastIndices, setLastIndices] = useState<Record<string, number>>({});
   const [entry, setEntry] = useState("");
   const [history, setHistory] = useState<JournalEntry[]>([]);
+  const [usedSeedIndices, setUsedSeedIndices] = useState<number[]>([]);
   
   // Daily Harvest States
   const [isHarvesting, setIsHarvesting] = useState(false);
@@ -43,6 +44,12 @@ export default function App() {
     if (!seenOnboarding) {
       setShowOnboarding(true);
     }
+
+    const savedUsedSeeds = localStorage.getItem('oraculo_used_seeds');
+    if (savedUsedSeeds) {
+      try { setUsedSeedIndices(JSON.parse(savedUsedSeeds)); }
+      catch (e) { console.error("Erro ao carregar sementes usadas", e); }
+    }
   }, []);
 
   const generateDailyInsight = async () => {
@@ -54,31 +61,63 @@ export default function App() {
     setIsHarvesting(true);
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-      const model = "gemini-3.1-pro-preview";
+      const model = "gemini-3-flash-preview";
       
       const context = todaysEntries.map(e => `Humor: ${e.mood}, Reflexão: ${e.text}`).join('\n');
       
       const response = await ai.models.generateContent({
         model,
-        contents: `Como Oráculo da Intuição, analise estas reflexões do dia e escreva uma "Colheita do Dia" para o usuário.
+        contents: `Analise as reflexões do dia e selecione o índice da frase mais apropriada da nossa biblioteca de sabedoria.
         
-        REQUISITOS:
-        - Escreva uma única frase COMPLETA, profunda e poética.
-        - A frase deve ter um tom de sabedoria ancestral, acolhedora e minimalista.
-        - Fale diretamente com o usuário (você).
-        - NÃO use introduções, aspas ou explicações. Vá direto à essência.
+        BIBLIOTECA:
+        ${WISDOM_SEEDS.map((s, i) => `${i}: ${s}`).join('\n')}
         
         REFLEXÕES DO DIA:
-        ${context}`,
+        ${context}
+        
+        REGRAS CRÍTICAS:
+        1. NÃO escolha nenhum destes índices (já usados recentemente): [${usedSeedIndices.join(', ')}]
+        2. Escolha uma frase que se conecte ao estado emocional atual.
+        3. Se o humor for negativo, escolha algo acolhedor. Se for positivo, algo inspirador.
+        4. Fator de variação: ${Math.random()}`,
         config: {
-          temperature: 0.7,
+          temperature: 1.0,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              selectedIndex: {
+                type: Type.INTEGER,
+                description: "O índice da frase selecionada na biblioteca."
+              }
+            },
+            required: ["selectedIndex"]
+          }
         }
       });
 
-      setDailyInsight(response.text?.trim() || "O silêncio de hoje guarda as sementes de amanhã. Respire e confie no processo.");
+      const result = JSON.parse(response.text || '{"selectedIndex": 0}');
+      let index = Math.min(Math.max(0, result.selectedIndex), WISDOM_SEEDS.length - 1);
+      
+      // Double check client-side to be absolutely sure no repetition occurs
+      if (usedSeedIndices.includes(index)) {
+        const availableIndices = WISDOM_SEEDS.map((_, i) => i).filter(i => !usedSeedIndices.includes(i));
+        if (availableIndices.length > 0) {
+          index = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+        }
+      }
+
+      setDailyInsight(WISDOM_SEEDS[index]);
+      
+      // Update used seeds (keep last 10)
+      const newUsed = [index, ...usedSeedIndices].slice(0, 10);
+      setUsedSeedIndices(newUsed);
+      localStorage.setItem('oraculo_used_seeds', JSON.stringify(newUsed));
     } catch (error) {
       console.error("Erro na colheita:", error);
-      setDailyInsight("A sua intuição está em repouso. Às vezes, o melhor insight é o próprio silêncio.");
+      // Fallback to random if AI fails
+      const randomIdx = Math.floor(Math.random() * WISDOM_SEEDS.length);
+      setDailyInsight(WISDOM_SEEDS[randomIdx]);
     } finally {
       setIsHarvesting(false);
     }
@@ -188,6 +227,7 @@ export default function App() {
     setEntry("");
     setStep('mood');
     setSelectedMoodId(null);
+    setDailyInsight(null); // Clear insight to allow fresh harvest
   };
 
   const selectedMood = MOODS.find(m => m.id === selectedMoodId);
@@ -490,7 +530,9 @@ export default function App() {
                               className="flex flex-col items-center gap-4 py-4"
                             >
                               <Loader2 className="animate-spin text-indigo-400" size={32} />
-                              <p className="text-indigo-200 font-serif italic">O Oráculo está a ler as suas sementes...</p>
+                              <p className="text-indigo-200 font-serif italic text-center leading-relaxed">
+                                Faça 3 respirações longas e conscientes enquanto o Oráculo faz a colheita das suas emoções...
+                              </p>
                             </motion.div>
                           ) : dailyInsight ? (
                             <motion.div 
