@@ -1,0 +1,64 @@
+import { GoogleGenAI, Type } from "@google/genai";
+import { WISDOM_SEEDS } from '../constants';
+import { JournalEntry } from '../types';
+
+export const geminiService = {
+  generateDailyInsight: async (history: JournalEntry[], usedSeedIndices: number[]): Promise<{ insight: string; newUsedSeeds: number[] }> => {
+    const today = new Date().toLocaleDateString('pt-PT');
+    const todaysEntries = history.filter(e => e.date === today);
+    
+    if (todaysEntries.length === 0) throw new Error("Sem entradas hoje");
+
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+    const model = "gemini-3-flash-preview";
+    
+    const context = todaysEntries.map(e => `Humor: ${e.mood}, Reflexão: ${e.text}`).join('\n');
+    
+    const response = await ai.models.generateContent({
+      model,
+      contents: `Analise as reflexões do dia e selecione o índice da frase mais apropriada da nossa biblioteca de sabedoria.
+      
+      BIBLIOTECA:
+      ${WISDOM_SEEDS.map((s, i) => `${i}: ${s}`).join('\n')}
+      
+      REFLEXÕES DO DIA:
+      ${context}
+      
+      REGRAS CRÍTICAS:
+      1. NÃO escolha nenhum destes índices (já usados recentemente): [${usedSeedIndices.join(', ')}]
+      2. Escolha uma frase que se conecte ao estado emocional atual.
+      3. Se o humor for negativo, escolha algo acolhedor. Se for positivo, algo inspirador.
+      4. Fator de variação: ${Math.random()}`,
+      config: {
+        temperature: 1.0,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            selectedIndex: {
+              type: Type.INTEGER,
+              description: "O índice da frase selecionada na biblioteca."
+            }
+          },
+          required: ["selectedIndex"]
+        }
+      }
+    });
+
+    const result = JSON.parse(response.text || '{"selectedIndex": 0}');
+    let index = Math.min(Math.max(0, result.selectedIndex), WISDOM_SEEDS.length - 1);
+    
+    // Double check client-side to be absolutely sure no repetition occurs
+    if (usedSeedIndices.includes(index)) {
+      const availableIndices = WISDOM_SEEDS.map((_, i) => i).filter(i => !usedSeedIndices.includes(i));
+      if (availableIndices.length > 0) {
+        index = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+      }
+    }
+
+    const insight = WISDOM_SEEDS[index];
+    const newUsedSeeds = [index, ...usedSeedIndices].slice(0, 10);
+
+    return { insight, newUsedSeeds };
+  }
+};

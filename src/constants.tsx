@@ -1,26 +1,11 @@
+import React from 'react';
 import { 
   PartyPopper, Sun, Lightbulb, Cloud, 
   ShieldAlert, ThumbsDown, AlertCircle, Frown, Smile,
-  Heart, Moon, User,
-  LucideIcon 
+  Heart, Moon, User, History, PieChart,
+  Sprout, Flower2, Flower, Eye, Sparkles
 } from 'lucide-react';
-
-export interface Mood {
-  id: string;
-  label: string;
-  icon: LucideIcon;
-  color: string;
-  text: string;
-  light: string;
-}
-
-export interface JournalEntry {
-  id: number;
-  mood: string;
-  prompt: string;
-  text: string;
-  date: string;
-}
+import { Mood, MasteryTitle } from './types';
 
 export const WISDOM_SEEDS = [
   "A clareza não nasce do pensamento, mas do silêncio que o precede.",
@@ -77,7 +62,8 @@ export const MOODS: Mood[] = [
   { id: 'reflexivo', label: 'Dúvida', icon: Smile, color: 'bg-indigo-500', text: 'text-indigo-500', light: 'bg-indigo-50' },
   { id: 'gratidao', label: 'Gratidão', icon: Heart, color: 'bg-rose-400', text: 'text-rose-400', light: 'bg-rose-50' },
   { id: 'cansaco', label: 'Cansaço', icon: Moon, color: 'bg-slate-600', text: 'text-slate-600', light: 'bg-slate-100' },
-  { id: 'solidao', label: 'Solidão', icon: User, color: 'bg-cyan-600', text: 'text-cyan-600', light: 'bg-cyan-50' }
+  { id: 'solidao', label: 'Solidão', icon: User, color: 'bg-cyan-600', text: 'text-cyan-600', light: 'bg-cyan-50' },
+  { id: 'outro', label: 'Outro', icon: Sparkles, color: 'bg-slate-800', text: 'text-slate-800', light: 'bg-slate-50' }
 ];
 
 export const PROMPTS: Record<string, string[]> = {
@@ -92,5 +78,43 @@ export const PROMPTS: Record<string, string[]> = {
   inspirado: ["Que ideia nova me visitou hoje?", "Qual é o primeiro passo para tornar isto real?", "A quem este pensamento poderia ajudar?", "O que me fez sentir que tudo é possível?", "Que música ou imagem combina com este estado?"],
   gratidao: ["Que detalhe invisível do meu dia merece um 'obrigado'?", "Quem foi a pessoa que, mesmo sem saber, melhorou o meu dia?", "O que eu tenho hoje que era um desejo de ontem?", "Qual é a sensação física que a gratidão traz ao meu corpo agora?", "Se eu pudesse agradecer por um desafio, qual seria?"],
   cansaco: ["Este cansaço é do corpo, da mente ou da alma?", "O que eu posso deixar de fazer hoje para me dar um momento de pausa?", "Qual é o limite que eu ignorei e que me trouxe até aqui?", "Se o descanso fosse um lugar, como ele seria?", "O que me roubou mais energia nas últimas horas?"],
-  solidao: ["O que este silêncio está a tentar dizer-me?", "Sinto falta de alguém ou sinto falta de mim mesmo?", "Como posso ser a minha própria melhor companhia hoje?", "Que parte de mim só se revela quando estou sozinho?", "A solidão é um vazio ou um espaço para eu crescer?"]
+  solidao: ["O que este silêncio está a tentar dizer-me?", "Sinto falta de alguém ou sinto falta de mim mesmo?", "Como posso ser a minha própria melhor companhia hoje?", "Que parte de mim só se revela quando estou sozinho?", "A solidão é um vazio ou um espaço para eu crescer?"],
+  outro: [
+    "O que esta sensação está a tentar comunicar-te agora?",
+    "Se este sentimento fosse uma cor ou uma forma, como seria?",
+    "Onde no teu corpo sentes esta energia com mais intensidade?",
+    "O que mudaria no teu dia se aceitasses plenamente este sentir?",
+    "Qual é a pergunta que este momento te está a fazer?"
+  ]
 };
+
+export const MASTERY_TITLES: MasteryTitle[] = [
+  { name: "Semeador Iniciante", threshold: 0, icon: Sprout },
+  { name: "Cuidador de Brotos", threshold: 5, icon: Flower2 },
+  { name: "Guardião do Silêncio", threshold: 15, icon: Flower },
+  { name: "Mestre da Intuição", threshold: 30, icon: Eye },
+  { name: "Oráculo do Jardim", threshold: 50, icon: Sparkles }
+];
+
+export const ONBOARDING_SLIDES = [
+  {
+    title: "O Espelho",
+    text: "Não é apenas um chat, mas um espelho. O app não dá respostas prontas; ele faz as perguntas certas para que você encontre as suas respostas.",
+    icon: <Smile className="text-indigo-500" size={48} />
+  },
+  {
+    title: "O Panorama",
+    text: "Cada reflexão é uma semente. Com o tempo, verá o seu 'Jardim' transformar-se num panorama real da sua paisagem interior.",
+    icon: <PieChart className="text-emerald-500" size={48} />
+  },
+  {
+    title: "Privacidade",
+    text: "Tudo o que escreve fica guardado no seu dispositivo, de forma privada e segura.",
+    icon: <ShieldAlert className="text-amber-500" size={48} />
+  },
+  {
+    title: "O Hábito",
+    text: "Visite o Oráculo sempre que perceber uma emoção. Use-o como um diário de bolso para os seus estados de espírito.",
+    icon: <History className="text-indigo-500" size={48} />
+  }
+];
