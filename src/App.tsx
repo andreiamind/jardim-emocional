@@ -39,6 +39,13 @@ export default function App() {
   useEffect(() => {
     setHistory(storageService.getHistory());
     setUsedSeedIndices(storageService.getUsedSeeds());
+    
+    const savedInsight = storageService.getDailyInsight();
+    const today = new Date().toLocaleDateString('pt-PT');
+    if (savedInsight && savedInsight.date === today) {
+      setDailyInsight(savedInsight.insight);
+    }
+
     if (!storageService.getOnboardingSeen()) {
       setShowOnboarding(true);
     }
@@ -97,19 +104,34 @@ export default function App() {
     setStep('mood');
     setSelectedMoodId(null);
     setDailyInsight(null);
+    storageService.clearDailyInsight();
   };
 
   const generateDailyInsight = async () => {
+    if (isHarvesting) return;
+    
     setIsHarvesting(true);
+    
+    // Safety timeout to prevent getting stuck in loading state
+    const timeoutId = setTimeout(() => {
+      if (isHarvesting) {
+        console.warn("Colheita demorou demais, cancelando estado de carregamento.");
+        setIsHarvesting(false);
+      }
+    }, 15000);
+
     try {
-      const { insight, newUsedSeeds } = await geminiService.generateDailyInsight(history, usedSeedIndices);
-      setDailyInsight(insight);
-      setUsedSeedIndices(newUsedSeeds);
-      storageService.saveUsedSeeds(newUsedSeeds);
+      const result = await geminiService.generateDailyInsight(history, usedSeedIndices);
+      if (result) {
+        setDailyInsight(result.insight);
+        setUsedSeedIndices(result.newUsedSeeds);
+        storageService.saveUsedSeeds(result.newUsedSeeds);
+        storageService.saveDailyInsight(result.insight);
+      }
     } catch (error) {
       console.error("Erro na colheita:", error);
-      // Fallback logic handled in service or here if needed
     } finally {
+      clearTimeout(timeoutId);
       setIsHarvesting(false);
     }
   };

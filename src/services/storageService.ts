@@ -41,5 +41,27 @@ export const storageService = {
 
   saveUsedSeeds: (seeds: number[]) => {
     localStorage.setItem(USED_SEEDS_KEY, JSON.stringify(seeds));
+  },
+
+  getDailyInsight: (): { insight: string; date: string } | null => {
+    const saved = localStorage.getItem('oraculo_daily_insight');
+    if (!saved) return null;
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return null;
+    }
+  },
+
+  saveDailyInsight: (insight: string) => {
+    const data = {
+      insight,
+      date: new Date().toLocaleDateString('pt-PT')
+    };
+    localStorage.setItem('oraculo_daily_insight', JSON.stringify(data));
+  },
+
+  clearDailyInsight: () => {
+    localStorage.removeItem('oraculo_daily_insight');
   }
 };
