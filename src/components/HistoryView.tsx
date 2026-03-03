@@ -166,10 +166,13 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
           <h3 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-tighter text-sm"> 
             <Sparkles size={18} className="text-indigo-500" /> A Colheita de Hoje
           </h3>
-          <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl">
+          <div 
+            key={`harvest-container-${isHarvesting}-${!!dailyInsight}`}
+            className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl"
+          >
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-3xl" />
             
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
               {isHarvesting ? (
                 <motion.div 
                   key="harvesting"

@@ -111,28 +111,45 @@ export default function App() {
     if (isHarvesting) return;
     
     setIsHarvesting(true);
+    let isStillHarvesting = true;
     
     // Safety timeout to prevent getting stuck in loading state
     const timeoutId = setTimeout(() => {
-      if (isHarvesting) {
+      if (isStillHarvesting) {
         console.warn("Colheita demorou demais, cancelando estado de carregamento.");
         setIsHarvesting(false);
+        isStillHarvesting = false;
       }
     }, 15000);
 
     try {
       const result = await geminiService.generateDailyInsight(history, usedSeedIndices);
-      if (result) {
-        setDailyInsight(result.insight);
-        setUsedSeedIndices(result.newUsedSeeds);
+      if (isStillHarvesting && result) {
+        // Update storage
         storageService.saveUsedSeeds(result.newUsedSeeds);
         storageService.saveDailyInsight(result.insight);
+        
+        // Update state
+        setUsedSeedIndices(result.newUsedSeeds);
+        setDailyInsight(result.insight);
+        
+        // Small delay before ending loading state to ensure smooth transition on mobile
+        setTimeout(() => {
+          setIsHarvesting(false);
+          isStillHarvesting = false;
+        }, 300);
       }
     } catch (error) {
       console.error("Erro na colheita:", error);
-    } finally {
-      clearTimeout(timeoutId);
       setIsHarvesting(false);
+      isStillHarvesting = false;
+    } finally {
+      if (isStillHarvesting) {
+        clearTimeout(timeoutId);
+        // If we reach here without setting result, something went wrong or timed out
+        setIsHarvesting(false);
+        isStillHarvesting = false;
+      }
     }
   };
 
