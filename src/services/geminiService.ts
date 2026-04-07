@@ -5,24 +5,29 @@ import { JournalEntry } from '../types';
 export const geminiService = {
   generateDailyInsight: async (history: JournalEntry[], usedSeedIndices: number[]): Promise<{ insight: string; newUsedSeeds: number[] }> => {
     const today = new Date().toLocaleDateString('pt-PT');
-    const todaysEntries = history.filter(e => e.date === today);
+    let entriesToAnalyze = history.filter(e => e.date === today);
     
-    if (todaysEntries.length === 0) throw new Error("Sem entradas hoje");
+    // If no entries today, use the last 3 entries from history as context
+    if (entriesToAnalyze.length === 0) {
+      entriesToAnalyze = history.slice(0, 3);
+    }
+
+    if (entriesToAnalyze.length === 0) throw new Error("Nenhuma semente encontrada no jardim.");
 
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
       const model = "gemini-3-flash-preview";
       
-      const context = todaysEntries.map(e => `Humor: ${e.mood}, Reflexão: ${e.text}`).join('\n');
+      const context = entriesToAnalyze.map(e => `Humor: ${e.mood}, Reflexão: ${e.text}`).join('\n');
       
       const response = await ai.models.generateContent({
         model,
-        contents: `Analise as reflexões do dia e selecione o índice da frase mais apropriada da nossa biblioteca de sabedoria.
+        contents: `Analise as reflexões recentes e selecione o índice da frase mais apropriada da nossa biblioteca de sabedoria.
         
         BIBLIOTECA:
         ${WISDOM_SEEDS.map((s, i) => `${i}: ${s}`).join('\n')}
         
-        REFLEXÕES DO DIA:
+        REFLEXÕES:
         ${context}
         
         REGRAS CRÍTICAS:

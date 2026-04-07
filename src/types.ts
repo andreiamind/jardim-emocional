@@ -29,7 +29,5 @@ export interface MasteryTitle {
 
 export interface PanoramaData {
   distribution: (Mood & { count: number; percent: number })[];
-  keywords: { text: string; count: number }[];
-  highlight: string | null;
   totalCount: number;
 }
