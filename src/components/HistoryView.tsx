@@ -127,14 +127,14 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
               let scale = 1;
               let label = "Broto";
 
-              if (rank < third) {
-                // Top 1/3
+              if (rank < third && m.count >= 3) {
+                // Top 1/3 AND at least 3 entries
                 Icon = Flower;
                 size = 44;
                 scale = 1.3;
                 label = "Flor Vibrante";
-              } else if (rank < 2 * third) {
-                // Middle 1/3
+              } else if (rank < 2 * third && m.count >= 2) {
+                // Middle 1/3 AND at least 2 entries
                 Icon = Flower2;
                 size = 34;
                 scale = 1.15;
@@ -213,7 +213,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
           </div>
 
           {/* Mood Filters */}
-          <div className="flex overflow-x-auto gap-2 pb-2 hide-scrollbar">
+          <div className="flex flex-wrap gap-2 pb-2">
             {usedMoods.map(mood => {
               const isActive = selectedMoodFilter === mood.id;
               return (
@@ -368,9 +368,14 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                           )}
                         </div>
                       </div>
-                      <p className="text-slate-800 font-serif text-lg leading-relaxed italic">
-                        {item.text}
-                      </p>
+                      <div className="space-y-3">
+                        <p className="text-slate-400 font-serif text-xs italic leading-relaxed border-l-2 border-slate-100 pl-3">
+                          "{item.prompt}"
+                        </p>
+                        <p className="text-slate-800 font-serif text-lg leading-relaxed italic">
+                          {item.text}
+                        </p>
+                      </div>
                     </motion.div>
                   );
                 })
