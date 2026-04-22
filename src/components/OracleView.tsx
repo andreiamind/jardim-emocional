@@ -9,6 +9,7 @@ interface OracleViewProps {
   step: StepType;
   selectedMood: Mood | undefined;
   entry: string;
+  preWriteEntry: string;
   currentPrompt: string;
   history: JournalEntry[];
   mastery: MasteryTitle;
@@ -18,6 +19,7 @@ interface OracleViewProps {
   onMoodSelect: (id: string) => void;
   onConfirmCustomMood: () => void;
   onEntryChange: (text: string) => void;
+  onPreWriteEntryChange: (text: string) => void;
   onPreWriteNext: () => void;
   onSaveEntry: () => void;
   onBack: (to: StepType) => void;
@@ -27,6 +29,7 @@ export const OracleView: React.FC<OracleViewProps> = ({
   step,
   selectedMood,
   entry,
+  preWriteEntry,
   currentPrompt,
   history,
   mastery,
@@ -36,6 +39,7 @@ export const OracleView: React.FC<OracleViewProps> = ({
   onMoodSelect,
   onConfirmCustomMood,
   onEntryChange,
+  onPreWriteEntryChange,
   onPreWriteNext,
   onSaveEntry,
   onBack
@@ -166,8 +170,8 @@ export const OracleView: React.FC<OracleViewProps> = ({
           </div>
 
           <textarea 
-            value={entry}
-            onChange={(e) => onEntryChange(e.target.value)}
+            value={preWriteEntry}
+            onChange={(e) => onPreWriteEntryChange(e.target.value)}
             placeholder="Deixa as palavras fluírem livremente sobre o teu estado atual..."
             className="w-full h-64 p-6 rounded-[2rem] bg-slate-50 border-2 border-slate-100 focus:border-indigo-300 outline-none resize-none transition-all font-medium text-slate-700 text-lg leading-relaxed"
           />
@@ -183,10 +187,10 @@ export const OracleView: React.FC<OracleViewProps> = ({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onPreWriteNext} 
-              disabled={!entry.trim()}
+              disabled={!preWriteEntry.trim()}
               className="flex-[2] py-5 bg-slate-900 text-white rounded-2xl font-bold shadow-xl disabled:opacity-30 transition-all"
             >
-              Guardar Reflexão
+              Continuar com o Oráculo
             </motion.button>
           </div>
         </motion.div>

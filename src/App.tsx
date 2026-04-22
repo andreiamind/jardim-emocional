@@ -27,6 +27,7 @@ export default function App() {
   const [currentPrompt, setCurrentPrompt] = useState("");
   const [lastIndices, setLastIndices] = useState<Record<string, number>>({});
   const [entry, setEntry] = useState("");
+  const [preWriteEntry, setPreWriteEntry] = useState("");
   const [customMoodLabel, setCustomMoodLabel] = useState("");
   const [history, setHistory] = useState<JournalEntry[]>([]);
   const [usedSeedIndices, setUsedSeedIndices] = useState<number[]>([]);
@@ -90,6 +91,7 @@ export default function App() {
       mood: selectedMoodId,
       customMoodLabel: selectedMoodId === 'outro' ? customMoodLabel : undefined,
       prompt: currentPrompt,
+      preWriteText: preWriteEntry,
       text: entry,
       date: new Date().toLocaleDateString('pt-PT')
     };
@@ -100,6 +102,7 @@ export default function App() {
     
     // Reset state
     setEntry("");
+    setPreWriteEntry("");
     setCustomMoodLabel("");
     setStep('mood');
     setSelectedMoodId(null);
@@ -193,6 +196,7 @@ export default function App() {
               step={step}
               selectedMood={selectedMood}
               entry={entry}
+              preWriteEntry={preWriteEntry}
               currentPrompt={currentPrompt}
               history={history}
               mastery={mastery}
@@ -202,6 +206,7 @@ export default function App() {
               onMoodSelect={handleMoodSelect}
               onConfirmCustomMood={() => setStep('pre-write')}
               onEntryChange={setEntry}
+              onPreWriteEntryChange={setPreWriteEntry}
               onPreWriteNext={handlePreWriteNext}
               onSaveEntry={saveEntry}
               onBack={(to) => setStep(to)}

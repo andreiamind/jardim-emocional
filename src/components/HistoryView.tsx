@@ -368,11 +368,16 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                           )}
                         </div>
                       </div>
-                      <div className="space-y-3">
-                        <p className="text-slate-400 font-serif text-xs italic leading-relaxed border-l-2 border-slate-100 pl-3">
+                      <div className="space-y-4">
+                        {item.preWriteText && (
+                          <p className="text-slate-500 font-serif text-base leading-relaxed italic opacity-80 decoration-slate-200 underline-offset-4 underline decoration-1">
+                            {item.preWriteText}
+                          </p>
+                        )}
+                        <p className="text-indigo-400 font-serif text-xs italic leading-relaxed border-l-2 border-indigo-100 pl-3">
                           "{item.prompt}"
                         </p>
-                        <p className="text-slate-800 font-serif text-lg leading-relaxed italic">
+                        <p className="text-slate-800 font-serif text-lg leading-relaxed italic font-medium">
                           {item.text}
                         </p>
                       </div>

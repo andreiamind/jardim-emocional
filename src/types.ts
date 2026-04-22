@@ -14,6 +14,7 @@ export interface JournalEntry {
   mood: string;
   customMoodLabel?: string;
   prompt: string;
+  preWriteText?: string;
   text: string;
   date: string;
 }

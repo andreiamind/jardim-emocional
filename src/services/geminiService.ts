@@ -18,7 +18,12 @@ export const geminiService = {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
       const model = "gemini-3-flash-preview";
       
-      const context = entriesToAnalyze.map(e => `Humor: ${e.mood}, Reflexão: ${e.text}`).join('\n');
+      const context = entriesToAnalyze.map(e => {
+        let entryText = `Humor: ${e.mood}`;
+        if (e.preWriteText) entryText += `, Desabafo: ${e.preWriteText}`;
+        entryText += `, Pergunta: ${e.prompt}, Reflexão: ${e.text}`;
+        return entryText;
+      }).join('\n');
       
       const response = await ai.models.generateContent({
         model,
